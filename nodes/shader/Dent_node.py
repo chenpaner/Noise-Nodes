@@ -1,7 +1,7 @@
 import bpy
 from ..utils import ShaderNode
 class ShaderNodeDent(ShaderNode):
-    bl_name='Dent Noise'
+    bl_idname='Dent Noise'
     bl_label='Dent Noise'
     bl_icon='NONE'
 

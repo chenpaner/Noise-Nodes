@@ -1,7 +1,7 @@
 import bpy
 from ..utils import ShaderNode
 class ShaderNodeRegular(ShaderNode):
-    bl_name='Regular Noise'
+    bl_idname='Regular Noise'
     bl_label='Regular Noise'
     bl_icon='NONE'
  

@@ -1,7 +1,7 @@
 import bpy
 from ..utils import ShaderNode
 class ShaderNodeFractal(ShaderNode):
-    bl_name='Fractal Noise'
+    bl_idname='Fractal Noise'
     bl_label='Fractal Noise'
     bl_icon='NONE'
 

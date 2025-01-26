@@ -31,8 +31,10 @@ import bl_ui
 import bpy
 import nodeitems_utils
 from nodeitems_utils import NodeCategory
-
-
+import os
+import os
+from .translations import langs
+from bpy.app.translations import pgettext_iface as iface_
 bl_info = {
     "name": "Noise Nodes",
     "description": "Advance Noise Nodes For blender",
@@ -44,23 +46,6 @@ bl_info = {
     "wiki_url": "",
     "category": "Object" }
     
-class Panel(bpy.types.Panel):
-    bl_label = "Noise Nodes"
-    bl_idname = "VIEW3D_PT_noise_nodes"
-    bl_space_type = "NODE_EDITOR"
-    bl_region_type = "UI"
-    bl_category = "Noise Nodes"
-
-    def draw(self, context):
-        layout = self.layout
-        row = layout.row()
-        if context.object.active_material.node_tree.nodes.active.type == "GROUP":
-            x = context.object.active_material.node_tree.nodes.active.node_tree.nodes.active.location[0]
-            y = context.object.active_material.node_tree.nodes.active.node_tree.nodes.active.location[1]
-            row.label(text=f"X:{x}")
-            row.label(text=f"Y:{y}")
-        
-
 
 
 class ExtraNodesCategory(NodeCategory):
@@ -120,8 +105,10 @@ class NODE_MT_category_noise(bpy.types.Menu):
         layout = self.layout
         
         if context.space_data.tree_type == 'ShaderNodeTree':
-            for cls in shader_nodes:
-                bl_ui.node_add_menu.add_node_type(layout, cls.__name__)
+            for node in shader_nodes:
+                op = layout.operator("node.add_node",text=iface_(node.bl_label), icon_value=get_icon(node.bl_label))
+                op.type = node.bl_idname
+                op.use_transform = True
         else:
             for cls in geometry_nodes:
                 bl_ui.node_add_menu.add_node_type(layout, cls.__name__)
@@ -130,9 +117,37 @@ class NODE_MT_category_noise(bpy.types.Menu):
 def menu_draw(self, context):
     layout = self.layout
     layout.menu("NODE_MT_category_noise")
+    
+icons = None
+def register_icons():
+    plugin_folder = os.path.dirname(__file__)
+    path = os.path.join(plugin_folder, "icons")
+    icons = bpy.utils.previews.new()
+    for i in sorted(os.listdir(path)):
+        if i.endswith(".png"):
+            iconname = i[:-4]
+            filepath = os.path.join(path, i)
+            icons.load(iconname, filepath, 'IMAGE')
+    return icons
+
+def unregister_icons(icons):
+    try:
+        bpy.utils.previews.remove(icons)
+    except:
+        pass
+
+def get_icon(name):
+    if icons and name in icons:
+        return icons[name].icon_id
+    else:
+        return 3
 
 def register():
-    bpy.utils.register_class(Panel)
+    
+    global icons
+    if icons is None:
+        icons = register_icons()
+    
     bpy.utils.register_class(NODE_MT_category_noise)
     bpy.types.NODE_MT_shader_node_add_all.append(menu_draw)
     bpy.types.NODE_MT_geometry_node_add_all.append(menu_draw)
@@ -143,8 +158,13 @@ def register():
     for cls in geometry_nodes:
         bpy.utils.register_class(cls)
     
+    bpy.app.translations.register(__name__, langs)
+    
 def unregister():
-    bpy.utils.unregister_class(Panel)
+    
+    global icons
+    unregister_icons(icons)
+    
     bpy.utils.unregister_class(NODE_MT_category_noise)
     bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
     bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
@@ -154,3 +174,5 @@ def unregister():
         bpy.utils.unregister_class(cls)
     for cls in geometry_nodes:
         bpy.utils.unregister_class(cls)
+        
+    bpy.app.translations.unregister(__name__)

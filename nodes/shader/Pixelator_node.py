@@ -1,7 +1,7 @@
 import bpy
 from ..utils import ShaderNode
 class ShaderNodePixelator(ShaderNode):
-    bl_name='Pixelator'
+    bl_idname='Pixelator'
     bl_label='Pixelator'
     bl_icon='NONE'
 
