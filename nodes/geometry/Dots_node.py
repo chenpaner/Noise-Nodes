@@ -1,6 +1,6 @@
 import bpy
-from .utils import ShaderNode
-class ShaderNodeDots(ShaderNode):
+from ..utils import GeometryNode
+class GeometryNodeDots(GeometryNode):
     bl_name='Dot Noise'
     bl_label='Dot Noise'
     bl_icon='NONE'
@@ -15,7 +15,7 @@ class ShaderNodeDots(ShaderNode):
         self.inputs['W'].hide = True
 
     def createNodetree(self, name):
-        nt = self.node_tree = bpy.data.node_groups.new(name, 'ShaderNodeTree')
+        nt = self.node_tree = bpy.data.node_groups.new(name, 'GeometryNodeTree')
                #Socket Value
         
         nt.color_tag = 'NONE'
@@ -38,6 +38,7 @@ class ShaderNodeDots(ShaderNode):
         #Socket Input
         input_socket = nt.interface.new_socket(name = "Vector", in_out='INPUT', socket_type = 'NodeSocketVector')
         input_socket.default_value = (0.0, 0.0, 0.0)
+        input_socket.default_input = "POSITION"
         input_socket.min_value = 0.0
         input_socket.max_value = 1.0
         input_socket.subtype = 'NONE'
@@ -128,7 +129,7 @@ class ShaderNodeDots(ShaderNode):
         math_064.use_clamp = True
         
         #node Separate RGB.003
-        separate_rgb_003 = nt.nodes.new("ShaderNodeSeparateColor")
+        separate_rgb_003 = nt.nodes.new("FunctionNodeSeparateColor")
         separate_rgb_003.name = "Separate RGB.003"
         separate_rgb_003.mode = 'RGB'
         
@@ -138,36 +139,13 @@ class ShaderNodeDots(ShaderNode):
         #node Reroute.022
         reroute_022 = nt.nodes.new("NodeReroute")
         reroute_022.name = "Reroute.022"
-        #node Math.016
-        math_016 = nt.nodes.new("ShaderNodeMath")
-        math_016.name = "Math.016"
-        math_016.operation = 'GREATER_THAN'
-        math_016.use_clamp = False
-        #Value_001
-        math_016.inputs[1].default_value = 0.0
         
-        #node Math.022
-        math_022 = nt.nodes.new("ShaderNodeMath")
-        math_022.name = "Math.022"
-        math_022.operation = 'ABSOLUTE'
-        math_022.use_clamp = False
         
-        #node Texture Coordinate.009
-        texture_coordinate_009 = nt.nodes.new("ShaderNodeTexCoord")
-        texture_coordinate_009.name = "Texture Coordinate.009"
-        texture_coordinate_009.from_instancer = False
         
         #node Reroute.007
         reroute_007 = nt.nodes.new("NodeReroute")
         reroute_007.name = "Reroute.007"
-        #node Mix.015
-        mix_015 = nt.nodes.new("ShaderNodeMix")
-        mix_015.name = "Mix.015"
-        mix_015.blend_type = 'MIX'
-        mix_015.clamp_factor = True
-        mix_015.clamp_result = False
-        mix_015.data_type = 'RGBA'
-        mix_015.factor_mode = 'UNIFORM'
+
         
         #node Reroute.016
         reroute_016 = nt.nodes.new("NodeReroute")
@@ -268,11 +246,7 @@ class ShaderNodeDots(ShaderNode):
         separate_rgb_003.location = (-1260.0, -396.3999938964844)
         reroute_015.location = (-1719.0, -101.0)
         reroute_022.location = (-1719.0, -57.0)
-        math_016.location = (-1890.0, 0.0)
-        math_022.location = (-2100.0, 0.0)
-        texture_coordinate_009.location = (-1890.0, -257.20001220703125)
         reroute_007.location = (-2143.0, -35.0)
-        mix_015.location = (-1680.0, 0.0)
         reroute_016.location = (-879.0, -123.0)
         voronoi_texture.location = (-1260.0, 0.0)
         voronoi_texture_002.location = (-1470.0, 0.0)
@@ -296,11 +270,6 @@ class ShaderNodeDots(ShaderNode):
         separate_rgb_003.width, separate_rgb_003.height = 140.0, 100.0
         reroute_015.width, reroute_015.height = 16.0, 100.0
         reroute_022.width, reroute_022.height = 16.0, 100.0
-        math_016.width, math_016.height = 140.0, 100.0
-        math_022.width, math_022.height = 140.0, 100.0
-        texture_coordinate_009.width, texture_coordinate_009.height = 140.0, 100.0
-        reroute_007.width, reroute_007.height = 16.0, 100.0
-        mix_015.width, mix_015.height = 140.0, 100.0
         reroute_016.width, reroute_016.height = 16.0, 100.0
         voronoi_texture.width, voronoi_texture.height = 140.0, 100.0
         voronoi_texture_002.width, voronoi_texture_002.height = 140.0, 100.0
@@ -316,7 +285,9 @@ class ShaderNodeDots(ShaderNode):
         
         #initialize nt links
         #mix_015.Result -> voronoi_texture_002.Vector
-        nt.links.new(mix_015.outputs[2], voronoi_texture_002.inputs[0])
+        nt.links.new(reroute_007.outputs[0], voronoi_texture_002.inputs[0])
+        #mix_015.Result -> voronoi_texture.Vector
+        nt.links.new(reroute_007.outputs[0], voronoi_texture.inputs[0])
         #reroute_022.Output -> voronoi_texture.Scale
         nt.links.new(reroute_022.outputs[0], voronoi_texture.inputs[2])
         #reroute_022.Output -> voronoi_texture_002.Scale
@@ -350,13 +321,6 @@ class ShaderNodeDots(ShaderNode):
         #math_063.Value -> group_output.Value
         nt.links.new(math_063.outputs[0], group_output.inputs[0])
         #reroute_007.Output -> mix_015.B
-        nt.links.new(reroute_007.outputs[0], mix_015.inputs[7])
-        #math_016.Value -> mix_015.Factor
-        nt.links.new(math_016.outputs[0], mix_015.inputs[0])
-        #math_022.Value -> math_016.Value
-        nt.links.new(math_022.outputs[0], math_016.inputs[0])
-        #reroute_007.Output -> math_022.Value
-        nt.links.new(reroute_007.outputs[0], math_022.inputs[0])
         #group_input.Count -> reroute_015.Input
         nt.links.new(group_input.outputs[4], reroute_015.inputs[0])
         #group_input.Variation -> reroute_016.Input
@@ -364,7 +328,6 @@ class ShaderNodeDots(ShaderNode):
         #group_input.Scale -> reroute_022.Input
         nt.links.new(group_input.outputs[2], reroute_022.inputs[0])
         #mix_015.Result -> voronoi_texture.Vector
-        nt.links.new(mix_015.outputs[2], voronoi_texture.inputs[0])
         #group_input.Input -> reroute_007.Input
         nt.links.new(group_input.outputs[0], reroute_007.inputs[0])
         #math_061.Value -> math_062.Value
@@ -385,8 +348,6 @@ class ShaderNodeDots(ShaderNode):
         nt.links.new(voronoi_texture.outputs[0], math.inputs[0])
         #voronoi_texture.Distance -> math.Value
         nt.links.new(voronoi_texture.outputs[0], math.inputs[1])
-        #texture_coordinate_009.Generated -> mix_015.A
-        nt.links.new(texture_coordinate_009.outputs[0], mix_015.inputs[6])
         #math_063.Value -> mix.Factor
         nt.links.new(math_063.outputs[0], mix.inputs[0])
         #voronoi_texture_002.Color -> mix.B

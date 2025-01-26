@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodeStep(ShaderNode):
     bl_name='Step Noise'
     bl_label='Step Noise'

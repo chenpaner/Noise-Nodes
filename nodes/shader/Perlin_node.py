@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodePerlin(ShaderNode):
     bl_name='Perlin Noise'
     bl_label='Perlin Noise'

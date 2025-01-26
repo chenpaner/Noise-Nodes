@@ -1,6 +1,6 @@
 import bpy
-from .utils import ShaderNode
-class ShaderNodeCrackle(ShaderNode):
+from ..utils import GeometryNode
+class GeometryNodeCrackle(GeometryNode):
     bl_name='Crackle Noise'
     bl_label='Crackle Noise'
     bl_icon='NONE'
@@ -13,8 +13,8 @@ class ShaderNodeCrackle(ShaderNode):
         self.inputs['Range'].default_value = 0.5
         self.inputs['W'].hide = True
 
-    def createNodetree(self, name) :
-        nt = self.node_tree = bpy.data.node_groups.new(name, 'ShaderNodeTree')
+    def createNodetree(self, name): 
+        nt = self.node_tree = bpy.data.node_groups.new(name, 'GeometryNodeTree')
         
         nt.color_tag = 'NONE'
         nt.description = ""
@@ -36,6 +36,7 @@ class ShaderNodeCrackle(ShaderNode):
         #Socket Vector
         vector_socket = nt.interface.new_socket(name = "Vector", in_out='INPUT', socket_type = 'NodeSocketVector')
         vector_socket.default_value = (0.0, 0.0, 0.0)
+        vector_socket.default_input = "POSITION"
         vector_socket.min_value = 0.0
         vector_socket.max_value = 1.0
         vector_socket.subtype = 'NONE'
@@ -128,34 +129,13 @@ class ShaderNodeCrackle(ShaderNode):
         #node Reroute.002
         reroute_002 = nt.nodes.new("NodeReroute")
         reroute_002.name = "Reroute.002"
-        #node Math.004
-        math_004 = nt.nodes.new("ShaderNodeMath")
-        math_004.name = "Math.004"
-        math_004.operation = 'GREATER_THAN'
-        math_004.use_clamp = False
-        #Value_001
-        math_004.inputs[1].default_value = 0.0
+
         
-        #node Math.006
-        math_006 = nt.nodes.new("ShaderNodeMath")
-        math_006.name = "Math.006"
-        math_006.operation = 'ABSOLUTE'
-        math_006.use_clamp = False
+
         
-        #node Texture Coordinate.001
-        texture_coordinate_001 = nt.nodes.new("ShaderNodeTexCoord")
-        texture_coordinate_001.name = "Texture Coordinate.001"
-        texture_coordinate_001.from_instancer = False
+    
         
-        #node Mix.006
-        mix_006 = nt.nodes.new("ShaderNodeMix")
-        mix_006.name = "Mix.006"
-        mix_006.blend_type = 'MIX'
-        mix_006.clamp_factor = True
-        mix_006.clamp_result = False
-        mix_006.data_type = 'RGBA'
-        mix_006.factor_mode = 'UNIFORM'
-        
+
         #node Group Input
         group_input = nt.nodes.new("NodeGroupInput")
         group_input.name = "Group Input"
@@ -190,7 +170,7 @@ class ShaderNodeCrackle(ShaderNode):
         noise_texture_005.inputs[8].default_value = 0.0
         
         #node Separate RGB.002
-        separate_rgb_002 = nt.nodes.new("ShaderNodeSeparateColor")
+        separate_rgb_002 = nt.nodes.new("FunctionNodeSeparateColor")
         separate_rgb_002.name = "Separate RGB.002"
         separate_rgb_002.mode = 'RGB'
         
@@ -207,7 +187,7 @@ class ShaderNodeCrackle(ShaderNode):
         math_017.use_clamp = False
         
         #node Combine RGB
-        combine_rgb = nt.nodes.new("ShaderNodeCombineColor")
+        combine_rgb = nt.nodes.new("FunctionNodeCombineColor")
         combine_rgb.name = "Combine RGB"
         combine_rgb.mode = 'RGB'
         
@@ -220,10 +200,6 @@ class ShaderNodeCrackle(ShaderNode):
         reroute_003.location = (-307.2171630859375, -123.05186462402344)
         math_007.location = (718.314453125, -28.3140869140625)
         reroute_002.location = (-932.8892822265625, -304.4244689941406)
-        math_004.location = (-704.3819580078125, 15.75190258026123)
-        math_006.location = (-904.1268310546875, -58.794376373291016)
-        texture_coordinate_001.location = (-1089.8927001953125, 63.47160720825195)
-        mix_006.location = (-498.9571533203125, 9.180338859558105)
         group_input.location = (-1271.5714111328125, -293.7167663574219)
         math_016.location = (87.45454406738281, -228.89926147460938)
         math_018.location = (-427.25982666015625, -296.3743896484375)
@@ -241,10 +217,6 @@ class ShaderNodeCrackle(ShaderNode):
         reroute_003.width, reroute_003.height = 16.0, 100.0
         math_007.width, math_007.height = 140.0, 100.0
         reroute_002.width, reroute_002.height = 16.0, 100.0
-        math_004.width, math_004.height = 140.0, 100.0
-        math_006.width, math_006.height = 140.0, 100.0
-        texture_coordinate_001.width, texture_coordinate_001.height = 140.0, 100.0
-        mix_006.width, mix_006.height = 140.0, 100.0
         group_input.width, group_input.height = 140.0, 100.0
         math_016.width, math_016.height = 140.0, 100.0
         math_018.width, math_018.height = 140.0, 100.0
@@ -285,18 +257,8 @@ class ShaderNodeCrackle(ShaderNode):
         nt.links.new(math_007.outputs[0], combine_rgb.inputs[1])
         #math_017.Value -> combine_rgb.Blue
         nt.links.new(math_017.outputs[0], combine_rgb.inputs[2])
-        #reroute_002.Output -> mix_006.B
-        nt.links.new(reroute_002.outputs[0], mix_006.inputs[7])
-        #math_004.Value -> mix_006.Factor
-        nt.links.new(math_004.outputs[0], mix_006.inputs[0])
-        #texture_coordinate_001.Generated -> mix_006.A
-        nt.links.new(texture_coordinate_001.outputs[0], mix_006.inputs[6])
-        #math_006.Value -> math_004.Value
-        nt.links.new(math_006.outputs[0], math_004.inputs[0])
-        #reroute_002.Output -> math_006.Value
-        nt.links.new(reroute_002.outputs[0], math_006.inputs[0])
         #mix_006.Result -> reroute_003.Input
-        nt.links.new(mix_006.outputs[2], reroute_003.inputs[0])
+        nt.links.new(reroute_002.outputs[0], reroute_003.inputs[0])
         #group_input.Vector -> reroute_002.Input
         nt.links.new(group_input.outputs[0], reroute_002.inputs[0])
         #reroute_003.Output -> noise_texture_005.Vector

@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodeFluid(ShaderNode):
     bl_name='Fluid Noise'
     bl_label='Fluid Noise'

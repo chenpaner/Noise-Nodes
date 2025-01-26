@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodeCranal(ShaderNode):
     bl_name='Cranal Noise'
     bl_label='Cranal Noise'

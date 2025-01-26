@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodeWavy(ShaderNode):
     bl_name='Wavy Noise'
     bl_label='Wavy Noise'

@@ -1,6 +1,6 @@
 import bpy
-from .utils import ShaderNode
-class ShaderNodePixelator(ShaderNode):
+from ..utils import GeometryNode
+class GeometryNodePixelator(GeometryNode):
     bl_name='Pixelator'
     bl_label='Pixelator'
     bl_icon='NONE'
@@ -12,8 +12,9 @@ class ShaderNodePixelator(ShaderNode):
         self.inputs['Scale'].default_value = (1,1,1)
 
     def createNodetree(self, name) :
-        nt = self.node_tree = bpy.data.node_groups.new(name, 'ShaderNodeTree')
+        nt = self.node_tree = bpy.data.node_groups.new(name, 'GeometryNodeTree')
         vector_socket = nt.interface.new_socket(name = "Vector", in_out='OUTPUT', socket_type = 'NodeSocketVector')
+        vector_socket.default_input = "POSITION"
         vector_socket.subtype = 'NONE'
         vector_socket.default_value = (0.0, 0.0, 0.0)
         vector_socket.min_value = 0.0
@@ -595,53 +596,10 @@ class ShaderNodePixelator(ShaderNode):
         #node Reroute.071
         reroute_071 = nt.nodes.new("NodeReroute")
         reroute_071.name = "Reroute.071"
-        #node Math
-        math = nt.nodes.new("ShaderNodeMath")
-        math.name = "Math"
-        math.operation = 'GREATER_THAN'
-        math.use_clamp = False
-        #Value_001
-        math.inputs[1].default_value = 0.0
-        #Value_002
-        math.inputs[2].default_value = 0.5
-        
-        #node Texture Coordinate
-        texture_coordinate = nt.nodes.new("ShaderNodeTexCoord")
-        texture_coordinate.name = "Texture Coordinate"
-        texture_coordinate.from_instancer = False
-        
-        #node Math.001
-        math_001 = nt.nodes.new("ShaderNodeMath")
-        math_001.name = "Math.001"
-        math_001.operation = 'ABSOLUTE'
-        math_001.use_clamp = False
-        #Value_001
-        math_001.inputs[1].default_value = 0.5
-        #Value_002
-        math_001.inputs[2].default_value = 0.5
-        
-        #node Mix
-        mix = nt.nodes.new("ShaderNodeMix")
-        mix.name = "Mix"
-        mix.blend_type = 'MIX'
-        mix.clamp_factor = True
-        mix.clamp_result = False
-        mix.data_type = 'RGBA'
-        mix.factor_mode = 'UNIFORM'
-        #Factor_Vector
-        mix.inputs[1].default_value = (0.5, 0.5, 0.5)
-        #A_Float
-        mix.inputs[2].default_value = 0.0
-        #B_Float
-        mix.inputs[3].default_value = 0.0
-        #A_Vector
-        mix.inputs[4].default_value = (0.0, 0.0, 0.0)
-        #B_Vector
-        mix.inputs[5].default_value = (0.0, 0.0, 0.0)
-        #A_Rotation
-        mix.inputs[8].default_value = (0.0, 0.0, 0.0)
-        #B_Rotation
-        mix.inputs[9].default_value = (0.0, 0.0, 0.0)
+     
+      
+    
+
         
         #node Reroute.003
         reroute_003 = nt.nodes.new("NodeReroute")
@@ -844,17 +802,7 @@ class ShaderNodePixelator(ShaderNode):
         #combine_xyz_001.Vector -> group_output.Vector
         nt.links.new(combine_xyz_001.outputs[0], group_output.inputs[0])
         #mix.Result -> separate_xyz_002.Vector
-        nt.links.new(mix.outputs[2], separate_xyz_002.inputs[0])
-        #reroute_003.Output -> math_001.Value
-        nt.links.new(reroute_003.outputs[0], math_001.inputs[0])
-        #math_001.Value -> math.Value
-        nt.links.new(math_001.outputs[0], math.inputs[0])
-        #math.Value -> mix.Factor
-        nt.links.new(math.outputs[0], mix.inputs[0])
-        #reroute_003.Output -> mix.B
-        nt.links.new(reroute_003.outputs[0], mix.inputs[7])
-        #texture_coordinate.Generated -> mix.A
-        nt.links.new(texture_coordinate.outputs[0], mix.inputs[6])
+        nt.links.new(reroute_003.outputs[0], separate_xyz_002.inputs[0])
         #reroute_046.Output -> math_129.Value
         nt.links.new(reroute_046.outputs[0], math_129.inputs[0])
         #reroute_046.Output -> math_068.Value

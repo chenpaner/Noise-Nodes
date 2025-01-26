@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodeStreaks(ShaderNode):
     bl_name='Streaks Noise'
     bl_label='Streaks Noise'

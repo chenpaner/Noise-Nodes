@@ -17,7 +17,7 @@ def update_dim(self, context):
             self.inputs['W'].hide = True
 
 
-class ShaderNode(bpy.types.ShaderNodeCustomGroup):
+class Node:
     dimension: bpy.props.EnumProperty( name="Dimension", 
         items=[ 
         ("1D", '1D', 'Use the scalar value W as input'),
@@ -34,14 +34,17 @@ class ShaderNode(bpy.types.ShaderNodeCustomGroup):
     def draw_buttons(self, context , layout):
         if self.bl_label != "Pixelator":
             layout.prop(self, 'dimension' , text="")
+            
 
     def createNodetree(self, name) :
         pass
     def getNodetree(self, name):
-        if bpy.data.node_groups.find(name)==-1:
-            self.createNodetree(name)
-        else:
-            self.node_tree=bpy.data.node_groups[name]
+        self.createNodetree(name)
+        
+        # if bpy.data.node_groups.find(name)==-1:
+        #     self.createNodetree(name)
+        # else:
+        #     self.node_tree=bpy.data.node_groups[name]
                    
     def addSocket(self, is_output, sockettype, name):
         if is_output==True:
@@ -80,6 +83,8 @@ class ShaderNode(bpy.types.ShaderNodeCustomGroup):
             bpy.data.node_groups.remove(self.node_tree, do_unlink=True)
 
     
-        
-        
+class ShaderNode(Node , bpy.types.ShaderNodeCustomGroup):
+    pass
             
+class GeometryNode(Node , bpy.types.GeometryNodeCustomGroup):
+    pass

@@ -1,5 +1,5 @@
 import bpy
-from .utils import ShaderNode
+from ..utils import ShaderNode
 class ShaderNodeVoxel(ShaderNode):
     bl_name='Voxel Noise'
     bl_label='Voxel Noise'
