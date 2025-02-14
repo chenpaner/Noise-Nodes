@@ -33,6 +33,7 @@ import nodeitems_utils
 from nodeitems_utils import NodeCategory
 import os
 import os
+import bpy.utils.previews
 from .translations import langs
 from bpy.app.translations import pgettext_iface as iface_
 bl_info = {

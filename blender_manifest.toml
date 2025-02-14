@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "noise_nodes"
-version = "0.4.0"
+version = "0.4.1"
 name = "Noise Nodes"
 tagline = "Advance Noise Nodes For blender"
 maintainer = "haseebahmad295 <quicktiptech@gmail.com>"
