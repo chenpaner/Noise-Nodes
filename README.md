@@ -9,6 +9,7 @@
 Blender interface, meaning that upon installing the add-on, all included
  nodes can be found in the:</p>
 <p><font color="#000000" style="background-color: rgb(255, 255, 0);">Shader Nodes &gt; Add Node &gt; Noise Nodes</font></p>
+<p><font color="#000000" style="background-color: rgb(255, 255, 0);">Geometery Nodes &gt; Add Node &gt; Noise Nodes</font></p>
 <p>Addon Includes <b>14 Custom Nodes</b><br></p>
 <ul>
 <li>Voxel Noise&nbsp; <br></li>
