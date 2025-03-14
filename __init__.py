@@ -1,41 +1,12 @@
-
-from .nodes.geometry.Step_node import GeometryNodeStep
-from .nodes.geometry.Streaks_node import GeometryNodeStreaks
-from .nodes.geometry.Regular_node import GeometryNodeRegular
-from .nodes.geometry.Scratches_node import GeometryNodeScratches
-from .nodes.geometry.Perlin_node import GeometryNodePerlin
-from .nodes.geometry.Fractal_node import GeometryNodeFractal
-from .nodes.geometry.Fluid_node import GeometryNodeFluid
-from .nodes.geometry.Dots_node import GeometryNodeDots
-from .nodes.geometry.Dent_node import GeometryNodeDent
-from .nodes.geometry.Cranal_node import GeometryNodeCranal
-from .nodes.geometry.Pixelator_node import GeometryNodePixelator
-from .nodes.geometry.Crackle_node import GeometryNodeCrackle
-
-from .nodes.shader.Voxel_node import ShaderNodeVoxel
-from .nodes.shader.Cranal_node import ShaderNodeCranal
-from .nodes.shader.Pixelator_node import ShaderNodePixelator
-from .nodes.shader.Scratches_node import ShaderNodeScratches
-from .nodes.shader.Dots_node import ShaderNodeDots
-from .nodes.shader.Regular_node import ShaderNodeRegular
-from .nodes.shader.Dent_node import ShaderNodeDent
-from .nodes.shader.Fractal_node import ShaderNodeFractal
-from .nodes.shader.Streaks_node import ShaderNodeStreaks
-from .nodes.shader.Fluid_node import ShaderNodeFluid
-from .nodes.shader.Crackle_node import ShaderNodeCrackle
-from .nodes.shader.Perlin_node import ShaderNodePerlin
-from .nodes.shader.Step_node import ShaderNodeStep
-from .nodes.shader.Wavy_node import ShaderNodeWavy
-
-import bl_ui
 import bpy
-import nodeitems_utils
-from nodeitems_utils import NodeCategory
-import os
-import os
+import bl_ui
 import bpy.utils.previews
-from .translations import langs
 from bpy.app.translations import pgettext_iface as iface_
+
+from .translations import langs
+from .node_imp import NodeLib
+from .icons import Icon
+
 bl_info = {
     "name": "Noise Nodes",
     "description": "Advance Noise Nodes For blender",
@@ -45,58 +16,11 @@ bl_info = {
     "location": "View3D",
     "warning": "This addon is still in development.",
     "wiki_url": "",
-    "category": "Object" }
-    
+    "category": "Object",
+}
 
+geometry_nodes, shader_nodes = NodeLib()()
 
-class ExtraNodesCategory(NodeCategory):
-    @classmethod
-    def poll(cls, context):
-        return (context.space_data.tree_type == 'ShaderNodeTree' and
-                context.scene.render.engine in ['BLENDER_EEVEE', 'CYCLES'])
-
-
-
-shader_nodes = [
-    ShaderNodeVoxel,
-    ShaderNodeCranal,
-    ShaderNodePixelator,
-    ShaderNodeScratches,
-    ShaderNodeDots,
-    ShaderNodeRegular,
-    ShaderNodeStreaks,
-    ShaderNodeFractal,
-    ShaderNodeDent,
-    ShaderNodeFluid,
-    ShaderNodeCrackle,
-    ShaderNodePerlin,
-    ShaderNodeStep,
-    ShaderNodeWavy
-]
-
-
-geometry_nodes = [
-    GeometryNodeDent,
-    GeometryNodeCranal,
-    GeometryNodePixelator,
-    GeometryNodeCrackle,
-    GeometryNodeDots,
-    GeometryNodeFluid,
-    GeometryNodeFractal,
-    GeometryNodePerlin,
-    GeometryNodeRegular,
-    GeometryNodeScratches,
-    GeometryNodeStep,
-    GeometryNodeStreaks,
-]
-
-
-node_categories = [
-    ExtraNodesCategory("SH_NoiseNodes", "NoiseNodes", items=[node.__name__ for node in shader_nodes]),
-    ]
-geo_node_categories = [
-    ExtraNodesCategory("SH_NoiseNodes", "NoiseNodes", items=[node.__name__ for node in geometry_nodes]),
-    ]
 
 class NODE_MT_category_noise(bpy.types.Menu):
     bl_idname = "NODE_MT_category_noise"
@@ -104,76 +28,52 @@ class NODE_MT_category_noise(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        
-        if context.space_data.tree_type == 'ShaderNodeTree':
-            for node in shader_nodes:
-                op = layout.operator("node.add_node",text=iface_(node.bl_label), icon_value=get_icon(node.bl_label))
-                op.type = node.bl_idname
-                op.use_transform = True
+
+        if context.space_data.tree_type == "ShaderNodeTree":
+            node_classes = shader_nodes
         else:
-            for cls in geometry_nodes:
-                bl_ui.node_add_menu.add_node_type(layout, cls.__name__)
+            node_classes = geometry_nodes
+
+        for node_class in sorted(node_classes, key=lambda x: x.bl_name):
+            operator = layout.operator(
+                "node.add_node",
+                text=iface_(node_class.bl_label),
+                icon_value=Icon.get_icon(node_class.bl_label),
+            )
+            operator.type = node_class.__name__
+            operator.use_transform = True
+
         bl_ui.node_add_menu.draw_assets_for_catalog(layout, self.bl_label)
+
 
 def menu_draw(self, context):
     layout = self.layout
     layout.menu("NODE_MT_category_noise")
-    
-icons = None
-def register_icons():
-    plugin_folder = os.path.dirname(__file__)
-    path = os.path.join(plugin_folder, "icons")
-    icons = bpy.utils.previews.new()
-    for i in sorted(os.listdir(path)):
-        if i.endswith(".png"):
-            iconname = i[:-4]
-            filepath = os.path.join(path, i)
-            icons.load(iconname, filepath, 'IMAGE')
-    return icons
 
-def unregister_icons(icons):
-    try:
-        bpy.utils.previews.remove(icons)
-    except:
-        pass
-
-def get_icon(name):
-    if icons and name in icons:
-        return icons[name].icon_id
-    else:
-        return 3
 
 def register():
-    
-    global icons
-    if icons is None:
-        icons = register_icons()
-    
+    Icon.register_icons()
     bpy.utils.register_class(NODE_MT_category_noise)
     bpy.types.NODE_MT_shader_node_add_all.append(menu_draw)
     bpy.types.NODE_MT_geometry_node_add_all.append(menu_draw)
-    nodeitems_utils.register_node_categories("NOISE_NODES", node_categories)
-    
+
     for cls in shader_nodes:
         bpy.utils.register_class(cls)
     for cls in geometry_nodes:
         bpy.utils.register_class(cls)
-    
+
     bpy.app.translations.register(__name__, langs)
-    
+
+
 def unregister():
-    
-    global icons
-    unregister_icons(icons)
-    
+    Icon.unregister_icons()
     bpy.utils.unregister_class(NODE_MT_category_noise)
     bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
     bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
-    nodeitems_utils.unregister_node_categories("NOISE_NODES")
-    
+
     for cls in shader_nodes:
         bpy.utils.unregister_class(cls)
     for cls in geometry_nodes:
         bpy.utils.unregister_class(cls)
-        
+
     bpy.app.translations.unregister(__name__)
