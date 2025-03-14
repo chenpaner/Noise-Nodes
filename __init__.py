@@ -2,6 +2,7 @@ import bpy
 import bl_ui
 import bpy.utils.previews
 from bpy.app.translations import pgettext_iface as iface_
+from typing import List, Tuple, Type
 
 from .translations import langs
 from .node_imp import NodeLib
@@ -9,71 +10,115 @@ from .icons import Icon
 
 bl_info = {
     "name": "Noise Nodes",
-    "description": "Advance Noise Nodes For blender",
+    "description": "Advanced Noise Nodes for Blender's Shader and Geometry Nodes",
     "author": "haseebahmad295",
-    "version": (0, 4, 0),
+    "version": (0, 4, 1),
     "blender": (4, 0, 0),
-    "location": "View3D",
-    "warning": "This addon is still in development.",
-    "wiki_url": "",
-    "category": "Object",
+    "location": "Node Editor > Add Menu",
+    "warning": "This addon is still in development",
+    "doc_url": "https://github.com/haseebahmed295/Noise-Nodes",
+    "tracker_url": "https://github.com/haseebahmed295/Noise-Nodes/issues",
+    "category": "Node",
 }
 
-geometry_nodes, shader_nodes = NodeLib()()
+
+def get_node_sets() -> Tuple[List[Type], List[Type]]:
+    """Safely retrieve node definitions"""
+    try:
+        return NodeLib()()
+    except Exception as e:
+        print(f"Error loading node definitions: {e}")
+        return [], []
 
 
 class NODE_MT_category_noise(bpy.types.Menu):
     bl_idname = "NODE_MT_category_noise"
     bl_label = "Noise Nodes"
+    bl_description = "Advanced noise generation nodes"
+
+    @classmethod
+    def poll(cls, context):
+        """Only show menu in supported node editors"""
+        return context.space_data.tree_type in {"ShaderNodeTree", "GeometryNodeTree"}
 
     def draw(self, context):
         layout = self.layout
+        geometry_nodes, shader_nodes = get_node_sets()
 
-        if context.space_data.tree_type == "ShaderNodeTree":
-            node_classes = shader_nodes
-        else:
-            node_classes = geometry_nodes
+        # Determine active node tree type
+        node_classes = (
+            shader_nodes
+            if context.space_data.tree_type == "ShaderNodeTree"
+            else geometry_nodes
+        )
 
+        if not node_classes:
+            layout.label(text="No nodes available", icon="ERROR")
+            return
+
+        # Draw nodes with separators for better organization
         for node_class in sorted(node_classes, key=lambda x: x.bl_name):
-            operator = layout.operator(
+            props = layout.operator(
                 "node.add_node",
                 text=iface_(node_class.bl_label),
                 icon_value=Icon.get_icon(node_class.bl_label),
             )
-            operator.type = node_class.__name__
-            operator.use_transform = True
+            props.type = node_class.__name__
+            props.use_transform = True
 
+        # Draw asset catalog integration
         bl_ui.node_add_menu.draw_assets_for_catalog(layout, self.bl_label)
 
 
 def menu_draw(self, context):
-    layout = self.layout
-    layout.menu("NODE_MT_category_noise")
+    """Draw menu entry if conditions are met"""
+    if NODE_MT_category_noise.poll(context):
+        self.layout.menu(NODE_MT_category_noise.bl_idname)
 
 
 def register():
-    Icon.register_icons()
-    bpy.utils.register_class(NODE_MT_category_noise)
-    bpy.types.NODE_MT_shader_node_add_all.append(menu_draw)
-    bpy.types.NODE_MT_geometry_node_add_all.append(menu_draw)
+    try:
+        # Register icons and classes
+        Icon.register_icons()
+        bpy.utils.register_class(NODE_MT_category_noise)
 
-    for cls in shader_nodes:
-        bpy.utils.register_class(cls)
-    for cls in geometry_nodes:
-        bpy.utils.register_class(cls)
+        # Add to menus
+        bpy.types.NODE_MT_shader_node_add_all.append(menu_draw)
+        bpy.types.NODE_MT_geometry_node_add_all.append(menu_draw)
 
-    bpy.app.translations.register(__name__, langs)
+        # Register node classes
+        geometry_nodes, shader_nodes = get_node_sets()
+        for cls in geometry_nodes + shader_nodes:
+            bpy.utils.register_class(cls)
+
+        # Register translations
+        bpy.app.translations.register(__name__, langs)
+
+    except Exception as e:
+        print(f"Registration failed: {e}")
 
 
 def unregister():
-    Icon.unregister_icons()
-    bpy.utils.unregister_class(NODE_MT_category_noise)
-    bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
-    bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
+    try:
+        # Remove from menus
+        bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
+        bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
 
-    for cls in shader_nodes:
-        bpy.utils.unregister_class(cls)
-    for cls in geometry_nodes:
-        bpy.utils.unregister_class(cls)
+        # Unregister classes
+        Icon.unregister_icons()
+        bpy.utils.unregister_class(NODE_MT_category_noise)
 
-    bpy.app.translations.unregister(__name__)
+        # Unregister nodes
+        geometry_nodes, shader_nodes = get_node_sets()
+        for cls in geometry_nodes + shader_nodes:
+            bpy.utils.unregister_class(cls)
+
+        # Cleanup
+        bpy.app.translations.unregister(__name__)
+
+    except Exception as e:
+        print(f"Unregistration failed: {e}")
+
+
+if __name__ == "__main__":
+    register()
