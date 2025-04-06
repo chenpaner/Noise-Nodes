@@ -32,10 +32,13 @@ class Node:
                 node.voronoi_dimensions = self.dimension
 
         # Show/hide Vector input
-        self.inputs["Vector"].hide = self.dimension == "1D"
-
-        # Show/hide W input
-        self.inputs["W"].hide = not (self.dimension in ["1D", "4D"])
+        vector = self.inputs.get("Vector")
+        if vector:
+            vector.hide = self.dimension == "1D"
+        w = self.inputs.get("W")
+        if w:
+            w.hide = not (self.dimension in ["1D", "4D"])
+            
 
     def draw_buttons(self, context, layout):
         if self.bl_label != "Pixelator":

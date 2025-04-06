@@ -1,10 +1,19 @@
 import importlib
 from pathlib import Path
 import os
-
+from typing import List, Tuple, Type
 
 class NodeLib:
     BASE_DIR = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "nodes"))
+        
+    @staticmethod
+    def get_node_sets() -> Tuple[List[Type], List[Type]]:
+        """Safely retrieve node definitions"""
+        try:
+            return NodeLib()()
+        except Exception as e:
+            print(f"Error loading node definitions: {e}")
+            return [], []
 
     @staticmethod
     def import_classes_from_folder(folder_path):
@@ -46,3 +55,4 @@ class NodeLib:
         shader_folder = cls.BASE_DIR / "shader"
         shader_classes = cls.import_classes_from_folder(shader_folder)
         return geometry_classes, shader_classes
+

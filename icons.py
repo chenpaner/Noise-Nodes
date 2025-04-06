@@ -23,8 +23,9 @@ class Icon:
     def unregister_icons(cls):
         try:
             bpy.utils.previews.remove(cls.icons)
-        except:
-            pass
+            cls.icons = None
+        except Exception as e:
+            print(f"Unregistration failed: {e}")
 
     @classmethod
     def get_icon(cls, name):

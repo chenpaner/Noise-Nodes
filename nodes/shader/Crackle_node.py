@@ -6,7 +6,7 @@ class ShaderNodeCrackle(ShaderNode):
     bl_name = "Crackle Noise"
     bl_label = "Crackle Noise"
     bl_icon = "NONE"
-    bl_idname = "Crackle Noise"
+
 
     # ('NodeSocketBool', 'NodeSocketVector', 'NodeSocketInt', 'NodeSocketShader', 'NodeSocketFloat', 'NodeSocketColor')
     def init(self, context):

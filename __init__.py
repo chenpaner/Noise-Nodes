@@ -2,11 +2,13 @@ import bpy
 import bl_ui
 import bpy.utils.previews
 from bpy.app.translations import pgettext_iface as iface_
-from typing import List, Tuple, Type
+import icecream
+
 
 from .translations import langs
 from .node_imp import NodeLib
 from .icons import Icon
+from .na import ng_register , ng_unregister
 
 bl_info = {
     "name": "Noise Nodes",
@@ -22,13 +24,7 @@ bl_info = {
 }
 
 
-def get_node_sets() -> Tuple[List[Type], List[Type]]:
-    """Safely retrieve node definitions"""
-    try:
-        return NodeLib()()
-    except Exception as e:
-        print(f"Error loading node definitions: {e}")
-        return [], []
+
 
 
 class NODE_MT_category_noise(bpy.types.Menu):
@@ -43,7 +39,7 @@ class NODE_MT_category_noise(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        geometry_nodes, shader_nodes = get_node_sets()
+        geometry_nodes, shader_nodes = NodeLib.get_node_sets()
 
         # Determine active node tree type
         node_classes = (
@@ -77,7 +73,9 @@ def menu_draw(self, context):
 
 
 def register():
-    try:
+
+    # try:
+
         # Register icons and classes
         Icon.register_icons()
         bpy.utils.register_class(NODE_MT_category_noise)
@@ -87,19 +85,24 @@ def register():
         bpy.types.NODE_MT_geometry_node_add_all.append(menu_draw)
 
         # Register node classes
-        geometry_nodes, shader_nodes = get_node_sets()
+        geometry_nodes, shader_nodes = NodeLib.get_node_sets()
+        icecream.ic(geometry_nodes, shader_nodes)
         for cls in geometry_nodes + shader_nodes:
             bpy.utils.register_class(cls)
 
         # Register translations
         bpy.app.translations.register(__name__, langs)
-
-    except Exception as e:
-        print(f"Registration failed: {e}")
+        
+        ng_register()
+    # except Exception as e:
+    #     print(f"Registration failed: {e}")
 
 
 def unregister():
-    try:
+    # try:
+
+        ng_unregister()
+        
         # Remove from menus
         bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
         bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
@@ -109,15 +112,15 @@ def unregister():
         bpy.utils.unregister_class(NODE_MT_category_noise)
 
         # Unregister nodes
-        geometry_nodes, shader_nodes = get_node_sets()
+        geometry_nodes, shader_nodes = NodeLib.get_node_sets()
         for cls in geometry_nodes + shader_nodes:
             bpy.utils.unregister_class(cls)
 
         # Cleanup
         bpy.app.translations.unregister(__name__)
 
-    except Exception as e:
-        print(f"Unregistration failed: {e}")
+    # except Exception as e:
+    #     print(f"Unregistration failed: {e}")
 
 
 if __name__ == "__main__":
