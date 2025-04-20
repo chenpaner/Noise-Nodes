@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeStreaks(ShaderNode):
-    bl_name = "Streaks Noise"
     bl_label = "Streaks Noise"
     bl_icon = "NONE"
 

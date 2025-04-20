@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeDots(GeometryNode):
-    bl_name='Dot Noise'
     bl_label='Dot Noise'
     bl_icon='NONE'
 

@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeFractal(GeometryNode):
-    bl_name='Fractal Noise'
     bl_label='Fractal Noise'
     bl_icon='NONE'
 

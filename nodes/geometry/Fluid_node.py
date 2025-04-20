@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeFluid(GeometryNode):
-    bl_name='Fluid Noise'
     bl_label='Fluid Noise'
     bl_icon='NONE'
 

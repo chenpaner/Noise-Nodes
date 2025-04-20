@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeCrackle(GeometryNode):
-    bl_name='Crackle Noise'
     bl_label='Crackle Noise'
     bl_icon='NONE'
 

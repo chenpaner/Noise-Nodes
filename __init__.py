@@ -53,7 +53,7 @@ class NODE_MT_category_noise(bpy.types.Menu):
             return
 
         # Draw nodes with separators for better organization
-        for node_class in sorted(node_classes, key=lambda x: x.bl_name):
+        for node_class in sorted(node_classes, key=lambda x: x.bl_label):
             props = layout.operator(
                 "node.add_node",
                 text=iface_(node_class.bl_label),

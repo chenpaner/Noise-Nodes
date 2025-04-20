@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeDent(ShaderNode):
-    bl_name = "Dent Noise"
     bl_label = "Dent Noise"
     bl_icon = "NONE"
 

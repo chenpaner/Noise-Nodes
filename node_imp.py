@@ -54,5 +54,5 @@ class NodeLib:
 
         shader_folder = cls.BASE_DIR / "shader"
         shader_classes = cls.import_classes_from_folder(shader_folder)
-        return geometry_classes, shader_classes
 
+        return geometry_classes, shader_classes

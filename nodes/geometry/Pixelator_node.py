@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodePixelator(GeometryNode):
-    bl_name='Pixelator'
     bl_label='Pixelator'
     bl_icon='NONE'
 

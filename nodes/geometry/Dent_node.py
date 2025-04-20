@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeDent(GeometryNode):
-    bl_name='Dent Noise'
     bl_label='Dent Noise'
     bl_icon='NONE'
 

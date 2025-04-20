@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeCranal(GeometryNode):
-    bl_name='Cranal Noise'
     bl_label='Cranal Noise'
     bl_icon='NONE'
 

@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeDots(ShaderNode):
-    bl_name = "Dot Noise"
     bl_label = "Dot Noise"
     bl_icon = "NONE"
 

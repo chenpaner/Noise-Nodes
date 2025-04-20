@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeScratches(ShaderNode):
-    bl_name = "Scratches Noise"
     bl_label = "Scratches Noise"
     bl_icon = "NONE"
 

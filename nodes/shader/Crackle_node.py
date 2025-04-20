@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeCrackle(ShaderNode):
-    bl_name = "Crackle Noise"
     bl_label = "Crackle Noise"
     bl_icon = "NONE"
 

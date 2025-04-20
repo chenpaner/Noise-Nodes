@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeStep(GeometryNode):
-    bl_name='Step Noise'
     bl_label='Step Noise'
     bl_icon='NONE'
 

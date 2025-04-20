@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeCranal(ShaderNode):
-    bl_name = "Cranal Noise"
     bl_label = "Cranal Noise"
     bl_icon = "NONE"
 

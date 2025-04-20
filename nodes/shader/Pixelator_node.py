@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodePixelator(ShaderNode):
-    bl_name = "Pixelator"
     bl_label = "Pixelator"
     bl_icon = "NONE"
 

@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeVoxel(ShaderNode):
-    bl_name = "Voxel Noise"
     bl_label = "Voxel Noise"
     bl_icon = "NONE"
 

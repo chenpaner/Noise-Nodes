@@ -3,7 +3,6 @@ from ..utils import ShaderNode
 
 
 class ShaderNodeFluid(ShaderNode):
-    bl_name = "Fluid Noise"
     bl_label = "Fluid Noise"
     bl_icon = "NONE"
 

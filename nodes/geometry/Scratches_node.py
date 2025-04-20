@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeScratches(GeometryNode):
-    bl_name='Scratches Noise'
     bl_label='Scratches Noise'
     bl_icon='NONE'
 

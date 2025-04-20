@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodeRegular(GeometryNode):
-    bl_name='Regular Noise'
     bl_label='Regular Noise'
     bl_icon='NONE'
  

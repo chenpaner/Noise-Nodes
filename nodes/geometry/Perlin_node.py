@@ -1,7 +1,6 @@
 import bpy
 from ..utils import GeometryNode
 class GeometryNodePerlin(GeometryNode):
-    bl_name='Perlin Noise'
     bl_label='Perlin Noise'
     bl_icon='NONE'
 
