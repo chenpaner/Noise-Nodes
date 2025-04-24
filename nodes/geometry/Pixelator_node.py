@@ -19,6 +19,8 @@ class GeometryNodePixelator(GeometryNode):
         vector_socket.min_value = 0.0
         vector_socket.max_value = 0.0
         vector_socket.attribute_domain = 'POINT'
+        nt.color_tag = "TEXTURE"
+
         
         #Socket Input Map
         input_map_socket = nt.interface.new_socket(name = "Input Map", in_out='INPUT', socket_type = 'NodeSocketVector')

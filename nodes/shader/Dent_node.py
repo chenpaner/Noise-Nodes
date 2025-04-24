@@ -18,7 +18,8 @@ class ShaderNodeDent(ShaderNode):
         nt = self.node_tree = bpy.data.node_groups.new(name, "ShaderNodeTree")
         # Socket Value
 
-        nt.color_tag = "NONE"
+        nt.color_tag = "TEXTURE"
+
         nt.description = ""
 
         # nt interface

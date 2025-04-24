@@ -6,6 +6,7 @@ class ShaderNodePixelator(ShaderNode):
     bl_label = "Pixelator"
     bl_icon = "NONE"
 
+
     # ('NodeSocketBool', 'NodeSocketVector', 'NodeSocketInt', 'NodeSocketShader', 'NodeSocketFloat', 'NodeSocketColor')
     def init(self, context):
         self.getNodetree(self.name + "_node_tree")
@@ -22,7 +23,8 @@ class ShaderNodePixelator(ShaderNode):
         vector_socket.min_value = 0.0
         vector_socket.max_value = 0.0
         vector_socket.attribute_domain = "POINT"
-
+        nt.color_tag = "TEXTURE"
+        
         # Socket Input Map
         input_map_socket = nt.interface.new_socket(
             name="Input Map", in_out="INPUT", socket_type="NodeSocketVector"

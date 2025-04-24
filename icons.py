@@ -1,8 +1,6 @@
 import os
 import bpy
 import bpy.utils.previews
-
-
 class Icon:
     icons = None
 

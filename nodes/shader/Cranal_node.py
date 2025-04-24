@@ -15,7 +15,8 @@ class ShaderNodeCranal(ShaderNode):
     def createNodetree(self, name):
         nt = self.node_tree = bpy.data.node_groups.new(name, "ShaderNodeTree")
 
-        nt.color_tag = "NONE"
+        nt.color_tag = "TEXTURE"
+
         nt.description = ""
 
         # nt interface

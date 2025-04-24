@@ -16,7 +16,8 @@ class GeometryNodeDent(GeometryNode):
         nt = self.node_tree = bpy.data.node_groups.new(name, 'GeometryNodeTree')
                #Socket Value
         
-        nt.color_tag = 'NONE'
+        nt.color_tag = "TEXTURE"
+
         nt.description = ""
 
         #nt interface

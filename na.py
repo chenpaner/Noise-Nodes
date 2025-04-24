@@ -2,16 +2,12 @@ import bpy
 from .node_imp import NodeLib
 from bpy.app.handlers import persistent
 
-# Define the Node_Info PropertyGroup
-
 
 class Node_Info(bpy.types.PropertyGroup):
     is_noise_node: bpy.props.BoolProperty(default=False)
     bl_idname: bpy.props.StringProperty()
     dimension: bpy.props.StringProperty()
     ng_name: bpy.props.StringProperty()
-
-# Persistent handler functions
 
 
 @persistent
@@ -173,8 +169,9 @@ def process_node(node_tree, node):
         for output in node.outputs:
             new_output = new_node.outputs.get(output.name)
             if new_output and output.is_linked and output.links:
-                link_in = output.links[0].to_socket
-                node_tree.links.new(new_output, link_in)
+                for link in output.links:
+                        link_in = link.to_socket
+                        node_tree.links.new(new_output, link_in)
 
         node_tree.nodes.remove(node)
         new_node.name = temp_name
@@ -207,8 +204,10 @@ def process_node_group(node_tree, node):
         for output in node.outputs:
             new_output = new_node.outputs.get(output.name)
             if new_output and output.is_linked and output.links:
-                link_in = output.links[0].to_socket
-                node_tree.links.new(new_output, link_in)
+                for link in output.links:
+                    if hasattr(link, 'to_socket'):
+                        link_in = link.to_socket
+                        node_tree.links.new(new_output, link_in)
         node_tree.nodes.remove(node)
         new_node.name = temp_name
         return (new_node.node_tree ,ng_name)
@@ -235,8 +234,9 @@ def replace_legacy_node(node_tree, node , shadernode_id):
     for output in node.outputs:
         new_output = new_node.outputs.get(output.name)
         if new_output and output.is_linked and output.links:
-            link_in = output.links[0].to_socket
-            node_tree.links.new(new_output, link_in)
+            for link in output.links:
+                    link_in = link.to_socket
+                    node_tree.links.new(new_output, link_in)
 
     node_tree.nodes.remove(node)
     new_node.name = temp_name
@@ -257,8 +257,9 @@ def ng_register():
         bpy.app.handlers.save_post.append(convert_node)
     if convert_node not in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.append(convert_node)
-    if check_linked_nodes not in bpy.app.handlers.blend_import_post:
-        bpy.app.handlers.blend_import_post.append(check_linked_nodes)
+    if bpy.app.version >= (4, 3, 0):
+        if check_linked_nodes not in bpy.app.handlers.blend_import_post:
+            bpy.app.handlers.blend_import_post.append(check_linked_nodes)
 
     # Register timer for initial conversion
     if not bpy.app.timers.is_registered(convert_node):
@@ -276,8 +277,9 @@ def ng_unregister():
         bpy.app.handlers.save_post.remove(convert_node)
     if convert_node in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.remove(convert_node)
-    if check_linked_nodes in bpy.app.handlers.blend_import_post:
-        bpy.app.handlers.blend_import_post.remove(check_linked_nodes)
+    if bpy.app.version >= (4, 3, 0):
+        if check_linked_nodes in bpy.app.handlers.blend_import_post:
+            bpy.app.handlers.blend_import_post.remove(check_linked_nodes)
     if bpy.app.timers.is_registered(convert_node):
         bpy.app.timers.unregister(convert_node)
 

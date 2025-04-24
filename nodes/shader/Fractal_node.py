@@ -20,8 +20,8 @@ class ShaderNodeFractal(ShaderNode):
     def createNodetree(self, name):
         nt = self.node_tree = bpy.data.node_groups.new(name, "ShaderNodeTree")
         # Socket Result
+        nt.color_tag = "TEXTURE"
 
-        nt.color_tag = "NONE"
         nt.description = ""
 
         # nt interface

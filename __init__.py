@@ -1,9 +1,6 @@
 import bpy
 import bl_ui
-import bpy.utils.previews
 from bpy.app.translations import pgettext_iface as iface_
-import icecream
-
 
 from .translations import langs
 from .node_imp import NodeLib
@@ -22,10 +19,6 @@ bl_info = {
     "tracker_url": "https://github.com/haseebahmed295/Noise-Nodes/issues",
     "category": "Node",
 }
-
-
-
-
 
 class NODE_MT_category_noise(bpy.types.Menu):
     bl_idname = "NODE_MT_category_noise"
@@ -74,8 +67,6 @@ def menu_draw(self, context):
 
 def register():
 
-    # try:
-
         # Register icons and classes
         Icon.register_icons()
         bpy.utils.register_class(NODE_MT_category_noise)
@@ -86,23 +77,22 @@ def register():
 
         # Register node classes
         geometry_nodes, shader_nodes = NodeLib.get_node_sets()
-        icecream.ic(geometry_nodes, shader_nodes)
         for cls in geometry_nodes + shader_nodes:
             bpy.utils.register_class(cls)
 
         # Register translations
         bpy.app.translations.register(__name__, langs)
-        
-        ng_register()
-    # except Exception as e:
-    #     print(f"Registration failed: {e}")
+        try:
+            ng_register()
+        except Exception as e:
+            print(f"Registration failed: {e}")
 
 
 def unregister():
-    # try:
-
-        ng_unregister()
-        
+        try:
+            ng_unregister()
+        except Exception as e:
+            print(f"Unregistration failed: {e}")
         # Remove from menus
         bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
         bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
@@ -119,9 +109,7 @@ def unregister():
         # Cleanup
         bpy.app.translations.unregister(__name__)
 
-    # except Exception as e:
-    #     print(f"Unregistration failed: {e}")
-
+    
 
 if __name__ == "__main__":
     register()

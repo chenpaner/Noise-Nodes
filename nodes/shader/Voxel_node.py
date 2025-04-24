@@ -9,7 +9,6 @@ class ShaderNodeVoxel(ShaderNode):
     # ('NodeSocketBool', 'NodeSocketVector', 'NodeSocketInt', 'NodeSocketShader', 'NodeSocketFloat', 'NodeSocketColor')
     def init(self, context):
         self.getNodetree(self.name + "_node_tree")
-
         self.inputs["Scale"].default_value = 5
         self.inputs["W"].hide = True
 
