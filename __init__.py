@@ -11,7 +11,7 @@ bl_info = {
     "name": "Noise Nodes",
     "description": "Advanced Noise Nodes for Blender's Shader and Geometry Nodes",
     "author": "haseebahmad295",
-    "version": (0, 4, 1),
+    "version": (0, 5, 0),
     "blender": (4, 0, 0),
     "location": "Node Editor > Add Menu",
     "warning": "This addon is still in development",
