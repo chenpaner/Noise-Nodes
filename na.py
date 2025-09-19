@@ -71,53 +71,6 @@ def convert_node(dummy=None):
         handle_legacy_nodes()
     
 
-def handle_legacy_nodes():
-    from .nodes.utils import ShaderNode
-    _, shadernodes = NodeLib.get_node_sets()
-    dynamic_classes = []
-    # Register dynamic classes
-    for shadernode in shadernodes:
-        # Define default methods if not present in original node
-        def default_init(self, context):
-            pass
-
-        def default_createNodetree(self, name):
-            node_tree = bpy.data.node_groups.new(name, 'ShaderNodeTree')
-            return node_tree
-
-        # Get init and createNodetree methods from original node, or use defaults
-        init_method = getattr(shadernode, 'init', default_init)
-        createNodetree_method = getattr(
-            shadernode, 'createNodetree', default_createNodetree)
-
-        # Create dynamic class inheriting from ShaderNode
-        class_dict = {
-            'bl_idname': shadernode.bl_label,
-            'bl_label': shadernode.bl_label,
-            'init': init_method,
-            'createNodetree': createNodetree_method
-        }
-        DynamicSubClass = type(shadernode.bl_label, (ShaderNode,), class_dict)
-
-        
-        bpy.utils.register_class(DynamicSubClass)
-        dynamic_classes.append(DynamicSubClass)
-
-    # Process materials
-    for mat in bpy.data.materials:
-        if mat.use_nodes and mat.node_tree:
-            for node in mat.node_tree.nodes:
-                for shadernode in shadernodes:
-                    if node.bl_idname == shadernode.bl_label or node.bl_idname == "NodeUndefined":
-                        replace_legacy_node(
-                            mat.node_tree, node, shadernode.__name__)
-                        break
-
-    # Unregister dynamic classes
-    for _class in dynamic_classes:
-        bpy.utils.unregister_class(_class)
-
-
 @persistent
 def check_linked_nodes(dummy=None):
     """Check nodes when data is linked or appended."""
@@ -138,16 +91,17 @@ def check_linked_nodes(dummy=None):
                             if node.type == 'GROUP' and node.Node_Info.is_noise_node:
                                 process_node_group(mod.node_group, node)
 
+# noise node to node group
 def process_node(node_tree, node):
     try:
         # Determine if this is a shader or geometry node tree
         group_type = "ShaderNodeGroup" if node_tree.type == 'SHADER' else "GeometryNodeGroup"
         new_node = node_tree.nodes.new(group_type)
         new_node.node_tree = node.node_tree
+        new_node.parent = node.parent
         temp_name = node.name
         new_node.label = node.label
         new_node.location = node.location
-
         if not hasattr(new_node, 'Node_Info'):
             return
 
@@ -179,13 +133,14 @@ def process_node(node_tree, node):
     except Exception as e:
         print(f"Error processing node {node.name}: {str(e)}")
 
-
+# node group to noise node
 def process_node_group(node_tree, node):
     try:
         if not hasattr(node, 'Node_Info'):
             return
 
         new_node = node_tree.nodes.new(node.Node_Info.bl_idname)
+        new_node.parent = node.parent
         new_node.location = node.location
         temp_name = node.name
         new_node.label = node.label
@@ -240,7 +195,54 @@ def replace_legacy_node(node_tree, node , shadernode_id):
 
     node_tree.nodes.remove(node)
     new_node.name = temp_name
-    
+
+def handle_legacy_nodes():
+    from .nodes.utils import ShaderNode
+    _, shadernodes = NodeLib.get_node_sets()
+    dynamic_classes = []
+    # Register dynamic classes
+    for shadernode in shadernodes:
+        # Define default methods if not present in original node
+        def default_init(self, context):
+            pass
+
+        def default_createNodetree(self, name):
+            node_tree = bpy.data.node_groups.new(name, 'ShaderNodeTree')
+            return node_tree
+
+        # Get init and createNodetree methods from original node, or use defaults
+        init_method = getattr(shadernode, 'init', default_init)
+        createNodetree_method = getattr(
+            shadernode, 'createNodetree', default_createNodetree)
+
+        # Create dynamic class inheriting from ShaderNode
+        class_dict = {
+            'bl_idname': shadernode.bl_label,
+            'bl_label': shadernode.bl_label,
+            'init': init_method,
+            'createNodetree': createNodetree_method
+        }
+        DynamicSubClass = type(shadernode.bl_label, (ShaderNode,), class_dict)
+
+        
+        bpy.utils.register_class(DynamicSubClass)
+        dynamic_classes.append(DynamicSubClass)
+
+    # Process materials
+    for mat in bpy.data.materials:
+        if mat.use_nodes and mat.node_tree:
+            for node in mat.node_tree.nodes:
+                for shadernode in shadernodes:
+                    if node.bl_idname == shadernode.bl_label or node.bl_idname == "NodeUndefined":
+                        replace_legacy_node(
+                            mat.node_tree, node, shadernode.__name__)
+                        break
+
+    # Unregister dynamic classes
+    for _class in dynamic_classes:
+        bpy.utils.unregister_class(_class)
+
+
 def ng_register():
     # Register the Node_Info class and attach it to both ShaderNodeGroup and GeometryNodeGroup
     if not hasattr(bpy.types.ShaderNodeGroup, 'Node_Info'):

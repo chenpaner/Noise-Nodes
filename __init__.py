@@ -6,6 +6,8 @@ from .translations import langs
 from .node_imp import NodeLib
 from .icons import Icon
 from .na import ng_register , ng_unregister
+from .override import enable_override_node_wrangler , disable_override_node_wrangler
+
 
 bl_info = {
     "name": "Noise Nodes",
@@ -85,14 +87,22 @@ def register():
         try:
             ng_register()
         except Exception as e:
-            print(f"Registration failed: {e}")
+            print(f"Noide Node Registration failed: {e}")
+        try:
+            enable_override_node_wrangler()
+        except:
+            pass
 
 
 def unregister():
         try:
+            disable_override_node_wrangler()
+        except:
+            pass
+        try:
             ng_unregister()
         except Exception as e:
-            print(f"Unregistration failed: {e}")
+            print(f"Noide Node Unregistration failed: {e}")
         # Remove from menus
         bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
         bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)
