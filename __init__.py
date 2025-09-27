@@ -13,7 +13,7 @@ bl_info = {
     "name": "Noise Nodes",
     "description": "Advanced Noise Nodes for Blender's Shader and Geometry Nodes",
     "author": "haseebahmad295",
-    "version": (0, 5, 0),
+    "version": (0, 6, 0),
     "blender": (4, 0, 0),
     "location": "Node Editor > Add Menu",
     "warning": "This addon is still in development",
@@ -99,10 +99,10 @@ def unregister():
             disable_override_node_wrangler()
         except:
             pass
-        try:
-            ng_unregister()
-        except Exception as e:
-            print(f"Noide Node Unregistration failed: {e}")
+        # try:
+        ng_unregister()
+        # except Exception as e:
+        #     print(f"Noide Node Unregistration failed: {e}")
         # Remove from menus
         bpy.types.NODE_MT_shader_node_add_all.remove(menu_draw)
         bpy.types.NODE_MT_geometry_node_add_all.remove(menu_draw)

@@ -11,7 +11,7 @@ class Node_Info(bpy.types.PropertyGroup):
 
 
 @persistent
-def convert_nodegroup(dummy=None):
+def convert_to_nodegroup(dummy=None):
     geometrynodes, shadernodes = NodeLib.get_node_sets()
     shader_nodes = [node.__name__ for node in shadernodes]
     geometry_nodes = [node.__name__ for node in geometrynodes]
@@ -19,44 +19,58 @@ def convert_nodegroup(dummy=None):
     # Process Shader Nodes
     for mat in bpy.data.materials:
         if mat.use_nodes and mat.node_tree:
-            for node in mat.node_tree.nodes:
-                if node.bl_idname in shader_nodes:
-                    process_node(mat.node_tree, node)
+            search_noise_nodes(mat.node_tree, shader_nodes)
 
     # Process Geometry Nodes
     for obj in bpy.data.objects:
         if obj.modifiers:
             for mod in obj.modifiers:
                 if mod.type == 'NODES' and mod.node_group:
-                    for node in mod.node_group.nodes:
-                        if node.bl_idname in geometry_nodes:
-                            process_node(mod.node_group, node)
+                    search_noise_nodes(mod.node_group, geometry_nodes)
 
+def search_noise_nodes(node_tree , node_list):
+    for node in node_tree.nodes:
+        if node.type == 'GROUP':
+            search_noise_nodes(node.node_tree , node_list)
+        if node.bl_idname in node_list:
+            process_node(node_tree, node)
 
+def search_noise_group(node_tree , nds:list , type:str = 'SHADER'):
+    if type == 'SHADER':
+        for node in node_tree.nodes:
+            if node.type == 'GROUP':
+                if hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
+                    itm = process_node_group(node_tree, node)
+                    nds.append(itm)
+                else:
+                    search_noise_group(node.node_tree , nds , type)
+            elif node.bl_idname == "NodeUndefined":
+                handle_legacy_nodes()
+    else:
+        for node in node_tree.nodes:
+            if node.type == 'GROUP':
+                if hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
+                    itm = process_node_group(node_tree, node)
+                    nds.append(itm)
+                else:
+                    search_noise_group(node.node_tree , nds , type)
+            
 @persistent
-def convert_node(dummy=None):
-    is_legacy = False
+def convert_to_node(dummy=None):
     nds = []
     # Process Shader Nodes
     for mat in bpy.data.materials:
         if mat.use_nodes and mat.node_tree:
-            for node in mat.node_tree.nodes:
-                if node.type == 'GROUP' and hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
-                    itm = process_node_group(mat.node_tree, node)
-                    nds.append(itm)
-                elif node.bl_idname == "NodeUndefined":
-                    is_legacy = True
-                    
+            search_noise_group(mat.node_tree,nds)
+                
     
     # Process Geometry Nodes
     for obj in bpy.data.objects:
         if obj.modifiers:
             for mod in obj.modifiers:
                 if mod.type == 'NODES' and mod.node_group:
-                    for node in mod.node_group.nodes:
-                        if node.type == 'GROUP' and hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
-                            itm = process_node_group(mod.node_group, node)
-                            nds.append(itm)
+                    search_noise_group(mod.node_group , nds , 'GEOMETRY')
+
 
     # Clean up unused node groups
     for nd in bpy.data.node_groups:
@@ -67,9 +81,6 @@ def convert_node(dummy=None):
     for nd in nds:
         nd[0].name = nd[1]
 
-    if is_legacy:
-        handle_legacy_nodes()
-    
 
 @persistent
 def check_linked_nodes(dummy=None):
@@ -78,9 +89,11 @@ def check_linked_nodes(dummy=None):
     for mat in bpy.data.materials:
         if mat.use_nodes and mat.node_tree:
             for node in mat.node_tree.nodes:
-                if hasattr(node, 'Node_Info'):
-                    if node.type == 'GROUP' and node.Node_Info.is_noise_node:
+                if node.type == 'GROUP':
+                    if hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
                         process_node_group(mat.node_tree, node)
+                    else:
+                        search_noise_group(node.node_tree , [])
 
     # Check Geometry Nodes
     for obj in bpy.data.objects:
@@ -88,8 +101,12 @@ def check_linked_nodes(dummy=None):
             for mod in obj.modifiers:
                 if mod.type == 'NODES' and mod.node_group:
                     for node in mod.node_group.nodes:
-                            if node.type == 'GROUP' and node.Node_Info.is_noise_node:
-                                process_node_group(mod.node_group, node)
+                            if node.type == 'GROUP':
+                                if hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
+                                    process_node_group(mod.node_group, node)
+                                else:
+                                    search_noise_group(node.node_tree , [])
+
 
 # noise node to node group
 def process_node(node_tree, node):
@@ -253,37 +270,37 @@ def ng_register():
             type=Node_Info)
 
     # Register handlers
-    if convert_nodegroup not in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.append(convert_nodegroup)
-    if convert_node not in bpy.app.handlers.save_post:
-        bpy.app.handlers.save_post.append(convert_node)
-    if convert_node not in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.append(convert_node)
+    if convert_to_nodegroup not in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.append(convert_to_nodegroup)
+    if convert_to_node not in bpy.app.handlers.save_post:
+        bpy.app.handlers.save_post.append(convert_to_node)
+    if convert_to_node not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(convert_to_node)
     if bpy.app.version >= (4, 3, 0):
         if check_linked_nodes not in bpy.app.handlers.blend_import_post:
             bpy.app.handlers.blend_import_post.append(check_linked_nodes)
 
     # Register timer for initial conversion
-    if not bpy.app.timers.is_registered(convert_node):
-        bpy.app.timers.register(convert_node, first_interval=0.1)
+    if not bpy.app.timers.is_registered(convert_to_node):
+        bpy.app.timers.register(convert_to_node, first_interval=0.1)
 
 
 def ng_unregister():
     # Run conversion before unregistering
-    convert_nodegroup()
+    convert_to_nodegroup()
 
     # Clean up handlers
-    if convert_nodegroup in bpy.app.handlers.save_pre:
-        bpy.app.handlers.save_pre.remove(convert_nodegroup)
-    if convert_node in bpy.app.handlers.save_post:
-        bpy.app.handlers.save_post.remove(convert_node)
-    if convert_node in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.remove(convert_node)
+    if convert_to_nodegroup in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.remove(convert_to_nodegroup)
+    if convert_to_node in bpy.app.handlers.save_post:
+        bpy.app.handlers.save_post.remove(convert_to_node)
+    if convert_to_node in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(convert_to_node)
     if bpy.app.version >= (4, 3, 0):
         if check_linked_nodes in bpy.app.handlers.blend_import_post:
             bpy.app.handlers.blend_import_post.remove(check_linked_nodes)
-    if bpy.app.timers.is_registered(convert_node):
-        bpy.app.timers.unregister(convert_node)
+    if bpy.app.timers.is_registered(convert_to_node):
+        bpy.app.timers.unregister(convert_to_node)
 
     # Note: We deliberately do NOT unregister Node_Info here
     # This ensures properties persist in the .blend file
