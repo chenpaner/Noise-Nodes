@@ -9,6 +9,9 @@ class Node_Info(bpy.types.PropertyGroup):
     dimension: bpy.props.StringProperty()
     ng_name: bpy.props.StringProperty()
 
+def check_nodes(tree):
+    '''Blender 5.0 will remove use_nodes'''
+    return (hasattr(tree, "use_nodes") and tree.use_nodes) and tree.node_tree and tree.nodes
 
 @persistent
 def convert_to_nodegroup(dummy=None):
@@ -18,7 +21,7 @@ def convert_to_nodegroup(dummy=None):
 
     # Process Shader Nodes
     for mat in bpy.data.materials:
-        if mat.use_nodes and mat.node_tree:
+        if check_nodes(mat):
             search_noise_nodes(mat.node_tree, shader_nodes)
 
     # Process Geometry Nodes
@@ -38,6 +41,8 @@ def search_noise_nodes(node_tree , node_list):
             process_node(node_tree, node)
 
 def search_noise_group(node_tree , nds:list , type:str = 'SHADER'):
+    if not node_tree.nodes:
+        return
     if type == 'SHADER':
         for node in node_tree.nodes:
             if node.type == 'GROUP':
@@ -62,7 +67,7 @@ def convert_to_node(dummy=None):
     nds = []
     # Process Shader Nodes
     for mat in bpy.data.materials:
-        if mat.use_nodes and mat.node_tree:
+        if check_nodes(mat):
             search_noise_group(mat.node_tree,nds)
                 
     
@@ -89,7 +94,7 @@ def check_linked_nodes(dummy=None):
     """Check nodes when data is linked or appended."""
     # Check Shader Nodes
     for mat in bpy.data.materials:
-        if mat.use_nodes and mat.node_tree:
+        if check_nodes(mat):
             for node in mat.node_tree.nodes:
                 if node.type == 'GROUP':
                     if hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
@@ -101,7 +106,7 @@ def check_linked_nodes(dummy=None):
     for obj in bpy.data.objects:
         if obj.modifiers:
             for mod in obj.modifiers:
-                if mod.type == 'NODES' and mod.node_group:
+                if mod.type == 'NODES' and mod.node_group and mod.node_group.nodes:
                     for node in mod.node_group.nodes:
                             if node.type == 'GROUP':
                                 if hasattr(node, 'Node_Info') and node.Node_Info.is_noise_node:
@@ -249,7 +254,7 @@ def handle_legacy_nodes():
 
     # Process materials
     for mat in bpy.data.materials:
-        if mat.use_nodes and mat.node_tree:
+        if check_nodes(mat):
             for node in mat.node_tree.nodes:
                 for shadernode in shadernodes:
                     if node.bl_idname == shadernode.bl_label or node.bl_idname == "NodeUndefined":
