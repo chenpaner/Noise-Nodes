@@ -29,6 +29,8 @@ def convert_to_nodegroup(dummy=None):
                     search_noise_nodes(mod.node_group, geometry_nodes)
 
 def search_noise_nodes(node_tree , node_list):
+    if not node_tree.nodes:
+        return
     for node in node_tree.nodes:
         if node.type == 'GROUP':
             search_noise_nodes(node.node_tree , node_list)
