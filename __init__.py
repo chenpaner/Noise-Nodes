@@ -57,8 +57,6 @@ class NODE_MT_category_noise(bpy.types.Menu):
             props.type = node_class.__name__
             props.use_transform = True
 
-        # Draw asset catalog integration
-        bl_ui.node_add_menu.draw_assets_for_catalog(layout, self.bl_label)
 
 
 def menu_draw(self, context):
